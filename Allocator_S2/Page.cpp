@@ -2,8 +2,10 @@
 
 
 
-Page::Page()
+Page::Page(size_t location, unsigned short size)
 {
+	this->location = location;
+	this->size = size;
 }
 
 

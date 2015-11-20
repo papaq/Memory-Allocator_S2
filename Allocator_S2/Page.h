@@ -19,6 +19,7 @@ public:
 
 	void setPageState(state newState);
 	state getPageState() const;
+	bool isFree() const;
 	void setBlockState(size_t location, state newState);
 	//void setBlockSize(unsigned short newBlockSize);
 	//unsigned short getBlockSize() const;
@@ -29,9 +30,11 @@ public:
 	// or returns 0 if there are no free or suitable
 	// sized blocks
 
-
+	bool findPageForBlock(unsigned short size) const;
 	void buildVectorOfBlocks();
 	void cutIntoBlocks(unsigned short blockSize);
-	size_t setFreeBlockBusy();
+	void* allocateBlock();
+	void* cutAndAlloc(unsigned short blockSize);
+
 };
 

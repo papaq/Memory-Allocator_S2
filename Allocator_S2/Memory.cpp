@@ -52,14 +52,50 @@ void* Memory::mem_alloc(size_t size)
 	if (size > this->memorySize || size < 1)
 		return nullptr;
 	auto blockSize = this->countBlockSize(size);
+
+	// Alloc a block with size less then a page
 	if (blockSize < this->pageSize)
 	{
-		// Alloc a block with size less then a page
-		
+
+		// Find a page with same block size and a free block
+		for (auto page : this->pagesVector)
+
+			if (page.findPageForBlock(blockSize))
+
+				// get pointer to this block 
+				return page.allocateBlock();
+
+		// No page with the same size free block
+
+		// Find a free page
+		for (auto page : this->pagesVector)
+			if (page.isFree())
+
+				// Cut page and get ptr to the first block
+				return page.cutAndAlloc(blockSize);
+
+		// No free page
+
+		// Find an existing block size, smaller then page
+		// and compatible with needed size
+		for (auto i = blockSize; i <= this->pageSize; i * 2)
+		{
+			// Find a page with new block size and a free block
+			for (auto page : this->pagesVector)
+
+				if (page.findPageForBlock(blockSize))
+
+					// get pointer to this block 
+					return page.allocateBlock();
+		}
+
+		// No opportunity to find a compatible block
+		return nullptr;
 	}
+
+	// Alloc a block with size of page or several
 	else
 	{
-		// Alloc a block with size of page or several
 
 	}
 }

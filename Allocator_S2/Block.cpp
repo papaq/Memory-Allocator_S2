@@ -1,7 +1,7 @@
 #include "Block.h"
 
 
-Block::Block(size_t location, unsigned short size)
+Block::Block(size_t location)
 {
 	this->location = location;
 	//this->size = size;
@@ -17,14 +17,9 @@ bool Block::isFree() const
 	return this->blockState == _free ? true : false;
 }
 
-void Block::setFree()
+void Block::setState(state newState)
 {
-	this->blockState = _free;
-}
-
-void Block::setBusy()
-{
-	this->blockState = _busy;
+	this->blockState = newState;
 }
 
 size_t Block::getLocation() const

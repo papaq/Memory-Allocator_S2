@@ -11,6 +11,39 @@ unsigned short Memory::countBlockSize(unsigned int mem)
 	return blockSize;
 }
 
+bool Memory::checkPagesFree(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc)
+{
+	unsigned short pageNumber = 2;
+
+	// Check other pages whether they are free
+	for (auto nextPageIterator = pagesIterator;
+	nextPageIterator != this->pagesVector.end(); ++nextPageIterator)
+	{
+		if (nextPageIterator->isFree())
+		{
+			if (pageNumber++ == pagesToAlloc)
+				return true;
+			continue;
+		}
+		break;
+	}
+	return false;
+}
+
+void Memory::setPagesMult(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc)
+{
+	unsigned short pageNumber = 1;
+
+	// Set first page _mult
+	pagesIterator->setPageState(_mult);
+
+	// Set other pages _busy
+	for (auto nextPageIterator = ++pagesIterator;
+	nextPageIterator != this->pagesVector.end() 
+		&& pageNumber < pagesToAlloc++; ++nextPageIterator)
+		nextPageIterator->setPageState(_busy);
+}
+
 Memory::Memory()
 {
 	// Size of memory, we allocate for this project
@@ -88,30 +121,30 @@ void* Memory::mem_alloc(size_t size)
 					// get pointer to this block 
 					return page.allocateBlock();
 		}
-
-		// No opportunity to find a compatible block
-		return nullptr;
 	}
 
 	// Alloc a block with size of page or several
 	else
 	{
 		unsigned short pagesInBlock = blockSize / this->pageSize;
+
 		// There are more pages in mem, then we need
 		if (this->pages > pagesInBlock)
 		{
-			for (vector<Page>::iterator pageIterator = this->pagesVector.begin();
+			for (auto pageIterator = this->pagesVector.begin();
 			pageIterator != this->pagesVector.end(); ++pageIterator)
-				if (pageIterator->getPageState() == _free)
-				{
-					for (vector<Page>::iterator nextPageIterator = pageIterator;
-					nextPageIterator != this->pagesVector.end(); ++pageIterator)
-					{
 
-					}
+				// First page is free && other 
+				if (pageIterator->getPageState() == _free && checkPagesFree(pageIterator, pagesInBlock))
+				{
+					this->setPagesMult(pageIterator, pagesInBlock);
+					return (void*)pageIterator->getLocation();
 				}
 		}
 	}
+
+	// No opportunity to find a compatible block
+	return nullptr;
 }
 
 void* Memory::mem_realloc(void* addr, size_t size)
@@ -120,9 +153,5 @@ void* Memory::mem_realloc(void* addr, size_t size)
 }
 
 void Memory::mem_free(void* addr)
-{
-}
-
-string Memory::mem_dump()
 {
 }

@@ -17,6 +17,7 @@ public:
 	Page(size_t location, unsigned short size);
 	~Page();
 
+	size_t getLocation() const;
 	void setPageState(state newState);
 	state getPageState() const;
 	bool isFree() const;

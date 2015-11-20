@@ -12,6 +12,11 @@ Page::~Page()
 {
 }
 
+size_t Page::getLocation() const
+{
+	return this->location;
+}
+
 void Page::setPageState(state newState)
 {
 	this->pageState = newState;

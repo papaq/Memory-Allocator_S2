@@ -14,6 +14,8 @@ class Memory
 	int *startPtr = nullptr;
 
 	static unsigned short countBlockSize(unsigned int mem);
+	bool checkPagesFree(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc);
+	void setPagesMult(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc);
 public:
 	Memory();
 	explicit Memory(unsigned short pages);
@@ -22,6 +24,5 @@ public:
 	void * mem_alloc(size_t size);
 	void * mem_realloc(void * addr, size_t size);
 	void mem_free(void * addr);
-	string mem_dump();
 };
 

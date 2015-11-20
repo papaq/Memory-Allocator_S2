@@ -96,12 +96,27 @@ void* Memory::mem_alloc(size_t size)
 	// Alloc a block with size of page or several
 	else
 	{
+		unsigned short pagesInBlock = blockSize / this->pageSize;
+		// There are more pages in mem, then we need
+		if (this->pages > pagesInBlock)
+		{
+			for (vector<Page>::iterator pageIterator = this->pagesVector.begin();
+			pageIterator != this->pagesVector.end(); ++pageIterator)
+				if (pageIterator->getPageState() == _free)
+				{
+					for (vector<Page>::iterator nextPageIterator = pageIterator;
+					nextPageIterator != this->pagesVector.end(); ++pageIterator)
+					{
 
+					}
+				}
+		}
 	}
 }
 
 void* Memory::mem_realloc(void* addr, size_t size)
 {
+
 }
 
 void Memory::mem_free(void* addr)

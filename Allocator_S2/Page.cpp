@@ -52,13 +52,13 @@ bool Page::isFree() const
 	return this->pageState == _free ? true : false;
 }
 
-void Page::setBlockState(size_t location, state newState)
-{
-	for (auto block = this->blocksVector.begin();
-	block < this->blocksVector.end(); ++block)
-		if (block->getLocation() == location)
-			block->setState(newState);
-}
+//void Page::setBlockState(size_t location, state newState)
+//{
+//	for (auto block = this->blocksVector.begin();
+//	block < this->blocksVector.end(); ++block)
+//		if (block->getLocation() == location)
+//			block->setState(newState);
+//}
 
 void Page::buildVectorOfBlocks()
 {

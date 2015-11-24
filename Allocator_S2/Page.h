@@ -4,6 +4,7 @@
 
 
 using namespace std;
+
 class Page
 {
 	size_t location;
@@ -13,6 +14,11 @@ class Page
 	unsigned short blockSize = 0;
 	unsigned short freeBlocks = 0;
 	vector<Block> blocksVector = vector<Block>();
+
+	void buildVectorOfBlocks();
+
+	void cutIntoBlocks(unsigned short blockSize);
+
 public:
 	explicit Page(size_t location, unsigned short size);
 	~Page();
@@ -33,19 +39,14 @@ public:
 
 	bool isFree() const;
 
-	void setBlockState(size_t location, state newState);
-	
+	// void setBlockState(size_t location, state newState);
+
 	bool findPageForBlock(unsigned short size) const;
-
-	void buildVectorOfBlocks();
-
-	void cutIntoBlocks(unsigned short blockSize);
 
 	void* allocateBlock();
 
 	void* cutAndAlloc(unsigned short blockSize);
 
 	void setBlockFree(size_t location);
-
 };
 

@@ -19,7 +19,11 @@ public:
 
 	size_t getLocation() const;
 
+	unsigned short getBlockSize() const;
+
 	unsigned short getBlocks() const;
+
+	void setBlocks(unsigned short blocks);
 
 	unsigned short getFreeBlocks() const;
 

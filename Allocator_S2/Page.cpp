@@ -17,9 +17,19 @@ size_t Page::getLocation() const
 	return this->location; 
 }
 
+unsigned short Page::getBlockSize() const
+{
+	return this->blockSize;
+}
+
 unsigned short Page::getBlocks() const
 {
 	return this->blocks;
+}
+
+void Page::setBlocks(unsigned short blocks)
+{
+	this->blocks = blocks;
 }
 
 unsigned short Page::getFreeBlocks() const

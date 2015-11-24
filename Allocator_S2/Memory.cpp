@@ -2,10 +2,15 @@
 #include "Memory.h"
 #include "string"
 
-unsigned short Memory::countBlockSize(unsigned int mem)
+unsigned short Memory::countBlockSize(unsigned int mem) const
 {
 	if (mem <= 4)
 		return 4;
+
+	auto page = this->pageSize;
+	if (mem >= pageSize)
+		return mem % page == 0 ? mem : (mem / page + 1) * page;
+
 	unsigned short blockSize = 8;
 	while (blockSize < mem)
 		blockSize *= 2;
@@ -14,15 +19,15 @@ unsigned short Memory::countBlockSize(unsigned int mem)
 
 bool Memory::checkPagesFree(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc)
 {
-	unsigned short pageNumber = 2;
+	unsigned short pageNumber = 0;
 
 	// Check other pages whether they are free
-	for (auto nextPageIterator = pagesIterator;
-	nextPageIterator != this->pagesVector.end(); ++nextPageIterator)
+	for (auto page = pagesIterator;
+	page != this->pagesVector.end(); ++page)
 	{
-		if (nextPageIterator->isFree())
+		if (page->isFree())
 		{
-			if (pageNumber++ == pagesToAlloc)
+			if (pagesToAlloc == ++pageNumber)
 				return true;
 			continue;
 		}
@@ -31,17 +36,19 @@ bool Memory::checkPagesFree(vector<Page>::iterator pagesIterator, unsigned short
 	return false;
 }
 
-void Memory::setPagesMult(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc)
+void Memory::setPagesMult(vector<Page>::iterator* pagesIterator, unsigned short pagesToAlloc)
 {
 	unsigned short pageNumber = 1;
+	auto firstPage = *pagesIterator;
 
 	// Set first page _mult
-	pagesIterator->setPageState(_mult);
+	firstPage->setPageState(_mult);
+	firstPage->setBlocks(pagesToAlloc);
 
 	// Set other pages _busy
-	for (auto nextPageIterator = ++pagesIterator;
+	for (auto nextPageIterator = ++firstPage;
 	nextPageIterator != this->pagesVector.end()
-		&& pageNumber < pagesToAlloc++; ++nextPageIterator)
+		&& pageNumber++ < pagesToAlloc; ++nextPageIterator)
 		nextPageIterator->setPageState(_busy);
 }
 
@@ -54,6 +61,28 @@ void Memory::freeBlockOfPages(vector<Page>::iterator pagesIterator)
 			page->setPageState(_free);
 		else
 			break;
+}
+
+void* Memory::reallocBlockOfPages(vector<Page>::iterator pagesIterator, size_t size)
+{
+	auto newSize = this->countBlockSize(size);
+	if (newSize != pagesIterator->getBlocks())
+	{
+		this->mem_free((void*)pagesIterator->getLocation());
+		return this->mem_alloc(size);
+	}
+	return (void*)pagesIterator->getLocation();
+}
+
+void* Memory::reallocPageBlock(void * addr, vector<Page>::iterator pagesIterator, size_t size)
+{
+	auto newSize = this->countBlockSize(size);
+	if (newSize != pagesIterator->getBlockSize())
+	{
+		this->mem_free(addr);
+		return this->mem_alloc(size);
+	}
+	return addr;
 }
 
 Memory::Memory()
@@ -151,9 +180,9 @@ void* Memory::mem_alloc(size_t size)
 			pageIterator != this->pagesVector.end(); ++pageIterator)
 
 				// First page is free && other 
-				if (pageIterator->getPageState() == _free && checkPagesFree(pageIterator, pagesInBlock))
+				if (checkPagesFree(pageIterator, pagesInBlock))
 				{
-					this->setPagesMult(pageIterator, pagesInBlock);
+					this->setPagesMult(&pageIterator, pagesInBlock);
 					return (void*)pageIterator->getLocation();
 				}
 		}
@@ -165,7 +194,24 @@ void* Memory::mem_alloc(size_t size)
 
 void* Memory::mem_realloc(void* addr, size_t size)
 {
-	return nullptr;
+	auto location = size_t(addr);
+	auto relative_loc = location - size_t(this->startPtr);
+	if (0 <= relative_loc && this->memorySize >= relative_loc + 4 && size > 0 && size < this->memorySize)
+		for (auto pageIterator = this->pagesVector.begin(); this->pagesVector.end() > pageIterator; ++pageIterator)
+		{
+			auto thisPageLocation = pageIterator->getLocation();
+
+			// Multiple-page block
+			if (thisPageLocation == location &&
+				_mult == pageIterator->getPageState())
+				return this->reallocBlockOfPages(pageIterator, size);
+
+			// Page of blocks
+			if (thisPageLocation == location - ((location - size_t(this->startPtr)) % this->pageSize) &&
+				_blocks == pageIterator->getPageState())
+				return this->reallocPageBlock(addr, pageIterator, size);
+		}
+	return addr;
 }
 
 void Memory::mem_free(void* addr)
@@ -173,8 +219,7 @@ void Memory::mem_free(void* addr)
 	auto location = size_t(addr);
 	auto relative_loc = location - size_t(this->startPtr);
 	if (0 <= relative_loc && this->memorySize >= relative_loc + 4)
-		for (auto pageIterator = this->pagesVector.begin();
-		     this->pagesVector.end() > pageIterator; ++pageIterator)
+		for (auto pageIterator = this->pagesVector.begin(); this->pagesVector.end() > pageIterator; ++pageIterator)
 		{
 			auto thisPageLocation = pageIterator->getLocation();
 

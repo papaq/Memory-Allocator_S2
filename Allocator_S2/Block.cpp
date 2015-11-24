@@ -22,6 +22,11 @@ void Block::setState(state newState)
 	this->blockState = newState;
 }
 
+state Block::getState() const
+{
+	return this->blockState;
+}
+
 size_t Block::getLocation() const
 {
 	return size_t(this->location);

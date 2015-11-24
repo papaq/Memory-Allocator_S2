@@ -11,7 +11,11 @@ public:
 	~Block();
 
 	bool isFree() const;
+
 	void setState(state newState);
+
+	state getState() const;
+
 	size_t getLocation() const;
 };
 

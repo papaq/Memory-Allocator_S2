@@ -6,7 +6,7 @@ using namespace std;
 
 class Memory
 {
-	int memorySize;
+	unsigned int memorySize;
 	// Size of page in bytes
 	unsigned short pageSize = 1024;
 	unsigned short pages = 10;
@@ -14,15 +14,26 @@ class Memory
 	int *startPtr = nullptr;
 
 	static unsigned short countBlockSize(unsigned int mem);
+
 	bool checkPagesFree(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc);
+
 	void setPagesMult(vector<Page>::iterator pagesIterator, unsigned short pagesToAlloc);
+
+	void freeBlockOfPages(vector<Page>::iterator pagesIterator);
+
 public:
 	Memory();
+
 	explicit Memory(unsigned short pages);
+
 	~Memory();
 
 	void * mem_alloc(size_t size);
+
 	void * mem_realloc(void * addr, size_t size);
+
 	void mem_free(void * addr);
+
+	string mem_dump();
 };
 

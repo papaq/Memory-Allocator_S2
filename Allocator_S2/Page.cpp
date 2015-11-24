@@ -14,7 +14,17 @@ Page::~Page()
 
 size_t Page::getLocation() const
 {
-	return this->location;
+	return this->location; 
+}
+
+unsigned short Page::getBlocks() const
+{
+	return this->blocks;
+}
+
+unsigned short Page::getFreeBlocks() const
+{
+	return this->freeBlocks;
 }
 
 void Page::setPageState(state newState)
@@ -34,9 +44,10 @@ bool Page::isFree() const
 
 void Page::setBlockState(size_t location, state newState)
 {
-	for (auto block : this->blocksVector)
-		if (block.getLocation() == location)
-			block.setState(newState);
+	for (auto block = this->blocksVector.begin();
+	block < this->blocksVector.end(); ++block)
+		if (block->getLocation() == location)
+			block->setState(newState);
 }
 
 void Page::buildVectorOfBlocks()
@@ -61,21 +72,40 @@ void* Page::cutAndAlloc(unsigned short blockSize)
 	return this->allocateBlock();
 }
 
+void Page::setBlockFree(size_t location)
+{
+	for (auto blockIterator = this->blocksVector.begin();
+	blockIterator < this->blocksVector.end(); ++blockIterator)
+		if (location == blockIterator->getLocation())
+			if (_busy == blockIterator->getState())
+			{
+				blockIterator->setState(_free);
+				this->freeBlocks++;
+				if (this->freeBlocks == this->blocks)
+				{
+					this->pageState = _free;
+					this->blocksVector.clear();
+				}
+				break;
+			}
+}
+
 bool Page::findPageForBlock(unsigned short size) const
 {
-	if (this->pageState == _blocks || this->blockSize == size || this->freeBlocks > 0)
+	if (this->pageState == _blocks && this->blockSize == size && this->freeBlocks > 0)
 		return true;
 	return false;
 }
 
 void* Page::allocateBlock()
 {
-	for (auto block : this->blocksVector)
-		if (block.isFree())
+	for (auto block = this->blocksVector.begin();
+	block < this->blocksVector.end(); ++block)
+		if (block->isFree())
 		{
-			block.setState(_busy);
+			block->setState(_busy);
 			this->freeBlocks--;
-			return (void*)block.getLocation();
+			return (void*)block->getLocation();
 		}
 
 	return nullptr;
